@@ -8,9 +8,12 @@ I made this because I got tired of slow scrapers that eat all your RAM and take 
 
 ## 🎥 Demo Video
 
-[![FastScraper Demo](https://github.com/ungleicch/FastScraper/raw/main/demo/demo_thumbnail.png)](https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4)
 
-> **Click the image above to watch the demo video**
+
+
+https://github.com/user-attachments/assets/13c6fd95-f498-4c0b-b557-086d57a49eae
+
+
 
 ## ✨ Features
 - 3-phase pipeline: BFS mapping → Parallel HTML fetching → Smart media downloading
