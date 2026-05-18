@@ -8,14 +8,11 @@ I made this because I got tired of slow scrapers that eat all your RAM and take 
 
 ## 🎥 Demo Video
 
-https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4
+## 🎥 Demo Video
 
-<video width="100%" controls>
-  <source src="https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![FastScraper Demo](https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4)](https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4)
 
-> Watch FastScraper crawling, parsing, and downloading media in real-time with the Web GUI.
+> Click the image above to play the video (or open it directly).
 
 ## ✨ Features
 - 3-phase pipeline: BFS mapping → Parallel HTML fetching → Smart media downloading
