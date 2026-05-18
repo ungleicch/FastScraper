@@ -17,3 +17,5 @@ tqdm>=4.66
 # C-Level Network & Event Loop Optimizations
 aiodns>=3.1         # C-Ares DNS bindings for ultra-fast multi-domain lookups
 uvloop>=0.19        # Fast C event loop (Note: Linux/macOS only; Windows falls back to default asyncio loop natively)
+
+websockets
