@@ -1,0 +1,19 @@
+# Core HTTP and Async Data handling
+aiohttp>=3.9
+aiofiles>=23.0
+
+# Ultra-fast C-backed HTML parsing
+lxml>=5.0
+
+# Web Server & GUI WebSockets
+fastapi>=0.100
+uvicorn>=0.22
+pydantic>=2.0
+
+# CLI and Styling tools
+rich>=13.0
+tqdm>=4.66
+
+# C-Level Network & Event Loop Optimizations
+aiodns>=3.1         # C-Ares DNS bindings for ultra-fast multi-domain lookups
+uvloop>=0.19        # Fast C event loop (Note: Linux/macOS only; Windows falls back to default asyncio loop natively)

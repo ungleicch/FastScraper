@@ -1,0 +1,1588 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FastScraper</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.2.0/dist/tabler-icons.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <style>
+            :root {
+                --bg: #0f1117;
+                --bg2: #181c27;
+                --bg3: #1f2433;
+                --bg4: #252b3b;
+                --border: rgba(255, 255, 255, 0.08);
+                --border2: rgba(255, 255, 255, 0.14);
+                --text: #e8eaf0;
+                --text2: #8891a8;
+                --text3: #545d72;
+                --green: #1fcc8a;
+                --green2: #0d8f5e;
+                --green-bg: rgba(31, 204, 138, 0.1);
+                --blue: #4d9cff;
+                --blue-bg: rgba(77, 156, 255, 0.1);
+                --red: #ff5c5c;
+                --red-bg: rgba(255, 92, 92, 0.1);
+                --amber: #f5a623;
+                --amber-bg: rgba(245, 166, 35, 0.1);
+                --purple: #a78bfa;
+                --radius: 8px;
+                --radius-lg: 12px;
+            }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+                    sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            ::-webkit-scrollbar {
+                width: 5px;
+                height: 5px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--bg4);
+                border-radius: 3px;
+            }
+
+            .app {
+                display: grid;
+                grid-template-rows: 52px 1fr;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .topbar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 0 20px;
+                border-bottom: 1px solid var(--border);
+                background: var(--bg2);
+            }
+            .topbar .logo {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .topbar .logo i {
+                font-size: 18px;
+                color: var(--green);
+            }
+            .topbar .logo h1 {
+                font-size: 15px;
+                font-weight: 600;
+                letter-spacing: -0.3px;
+            }
+            .topbar .logo span {
+                font-size: 11px;
+                color: var(--text3);
+                margin-left: 4px;
+            }
+            .status-pill {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 500;
+                border: 1px solid transparent;
+            }
+            .status-pill .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+            }
+            .pill-idle {
+                background: var(--bg3);
+                color: var(--text2);
+                border-color: var(--border);
+            }
+            .pill-idle .dot {
+                background: var(--text3);
+            }
+            .pill-running {
+                background: var(--green-bg);
+                color: var(--green);
+                border-color: rgba(31, 204, 138, 0.25);
+            }
+            .pill-running .dot {
+                background: var(--green);
+                animation: blink 1s ease-in-out infinite;
+            }
+            .pill-done {
+                background: var(--blue-bg);
+                color: var(--blue);
+                border-color: rgba(77, 156, 255, 0.25);
+            }
+            .pill-done .dot {
+                background: var(--blue);
+            }
+            .pill-stopped {
+                background: var(--red-bg);
+                color: var(--red);
+                border-color: rgba(255, 92, 92, 0.25);
+            }
+            .pill-stopped .dot {
+                background: var(--red);
+            }
+            @keyframes blink {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+            }
+            .topbar-right {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .topbar-time {
+                font-size: 12px;
+                color: var(--text3);
+                font-variant-numeric: tabular-nums;
+            }
+            .main {
+                display: grid;
+                grid-template-columns: 320px 1fr;
+                overflow: hidden;
+            }
+            .sidebar {
+                background: var(--bg2);
+                border-right: 1px solid var(--border);
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+                padding: 16px;
+            }
+            .sidebar section {
+                margin-bottom: 20px;
+            }
+            .sidebar section h3 {
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--text3);
+                margin-bottom: 8px;
+            }
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                margin-bottom: 8px;
+            }
+            .input-group label {
+                font-size: 11px;
+                color: var(--text2);
+            }
+            .input-group input,
+            .input-group select {
+                background: var(--bg3);
+                border: 1px solid var(--border2);
+                color: var(--text);
+                border-radius: var(--radius);
+                padding: 6px 10px;
+                font-size: 12px;
+                outline: none;
+                width: 100%;
+            }
+            .input-group input:focus {
+                border-color: var(--green);
+            }
+            .cfg-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .toggle-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 4px 0;
+            }
+            .toggle-row label {
+                font-size: 12px;
+                color: var(--text2);
+                cursor: help;
+            }
+            .toggle {
+                position: relative;
+                width: 32px;
+                height: 18px;
+                -webkit-appearance: none;
+                appearance: none;
+                background: var(--bg4);
+                border-radius: 9px;
+                cursor: pointer;
+                border: 1px solid var(--border2);
+                transition: background 0.2s;
+            }
+            .toggle::after {
+                content: "";
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: var(--text3);
+                transition:
+                    transform 0.2s,
+                    background 0.2s;
+            }
+            .toggle:checked {
+                background: var(--green);
+                border-color: var(--green2);
+            }
+            .toggle:checked::after {
+                transform: translateX(14px);
+                background: #fff;
+            }
+            .btn-row {
+                display: flex;
+                gap: 8px;
+                margin-top: 4px;
+            }
+            .btn {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                padding: 8px 12px;
+                border-radius: var(--radius);
+                border: 1px solid var(--border2);
+                background: var(--bg3);
+                color: var(--text);
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .btn:hover {
+                background: var(--bg4);
+                border-color: var(--border2);
+            }
+            .btn:active {
+                transform: scale(0.97);
+            }
+            .btn:disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+            }
+            .btn-start {
+                background: var(--green2);
+                border-color: var(--green2);
+                color: #fff;
+            }
+            .btn-start:hover {
+                background: var(--green);
+                border-color: var(--green);
+            }
+            .btn-stop {
+                background: transparent;
+                border-color: var(--red);
+                color: var(--red);
+            }
+            .btn-stop:hover {
+                background: var(--red-bg);
+            }
+            .metrics {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+            .metric {
+                background: var(--bg2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px 12px;
+            }
+            .metric-label {
+                font-size: 10px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--text3);
+                margin-bottom: 4px;
+            }
+            .metric-value {
+                font-size: 22px;
+                font-weight: 600;
+                letter-spacing: -0.5px;
+                color: var(--text);
+            }
+            .metric-sub {
+                font-size: 10px;
+                color: var(--text3);
+                margin-top: 2px;
+            }
+            .metric.green .metric-value {
+                color: var(--green);
+            }
+            .metric.red .metric-value {
+                color: var(--red);
+            }
+            .metric.blue .metric-value {
+                color: var(--blue);
+            }
+            .phases {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+            .phase {
+                background: var(--bg2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 10px 12px;
+            }
+            .phase.active {
+                border-color: rgba(31, 204, 138, 0.3);
+                background: var(--green-bg);
+            }
+            .phase.done {
+                border-color: rgba(77, 156, 255, 0.2);
+            }
+            .phase-head {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                margin-bottom: 6px;
+            }
+            .phase-num {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                font-size: 10px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--bg4);
+                color: var(--text3);
+                flex-shrink: 0;
+            }
+            .phase.active .phase-num {
+                background: var(--green);
+                color: #fff;
+            }
+            .phase.done .phase-num {
+                background: var(--blue);
+                color: #fff;
+            }
+            .phase-title {
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--text2);
+            }
+            .phase.active .phase-title {
+                color: var(--green);
+            }
+            .phase.done .phase-title {
+                color: var(--blue);
+            }
+            .phase-detail {
+                font-size: 10px;
+                color: var(--text3);
+                margin-bottom: 6px;
+                min-height: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .prog-track {
+                height: 3px;
+                background: var(--bg4);
+                border-radius: 2px;
+                overflow: hidden;
+            }
+            .prog-fill {
+                height: 100%;
+                background: var(--green);
+                border-radius: 2px;
+                transition: width 0.4s ease;
+            }
+            .phase.done .prog-fill {
+                background: var(--blue);
+            }
+            .prog-fill.indeterminate {
+                width: 35% !important;
+                animation: slide 1.1s ease-in-out infinite;
+            }
+            @keyframes slide {
+                0% {
+                    margin-left: -35%;
+                }
+                100% {
+                    margin-left: 110%;
+                }
+            }
+            .content {
+                display: grid;
+                grid-template-rows: auto auto 1fr auto;
+                overflow: hidden;
+                padding: 16px;
+                gap: 12px;
+                background: var(--bg);
+            }
+            .panel-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                min-height: 0;
+            }
+            .panel {
+                background: var(--bg2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                min-height: 0;
+            }
+            .panel-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 9px 12px;
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
+            }
+            .panel-head-left {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--text2);
+            }
+            .panel-head-right {
+                font-size: 10px;
+                color: var(--text3);
+            }
+            .panel-body {
+                flex: 1;
+                overflow: hidden;
+            }
+            .panel-scroll {
+                height: 100%;
+                overflow-y: auto;
+            }
+            .feed-item {
+                display: grid;
+                grid-template-columns: 8px 1fr 46px 34px;
+                align-items: center;
+                gap: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+            }
+            .feed-item:hover {
+                background: var(--bg3);
+            }
+            .feed-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .fd-ok {
+                background: var(--green);
+            }
+            .fd-err {
+                background: var(--red);
+            }
+            .fd-redir {
+                background: var(--amber);
+            }
+            .fd-wait {
+                background: var(--text3);
+                animation: blink 1s ease-in-out infinite;
+            }
+            .fd-img {
+                background: var(--blue);
+            }
+            .feed-url {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: var(--text2);
+            }
+            .feed-ms {
+                text-align: right;
+                color: var(--text3);
+                font-variant-numeric: tabular-nums;
+            }
+            .feed-code {
+                text-align: right;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+            }
+            .fc-ok {
+                color: var(--green);
+            }
+            .fc-err {
+                color: var(--red);
+            }
+            .fc-redir {
+                color: var(--amber);
+            }
+            .fc-wait {
+                color: var(--text3);
+            }
+            .log-body {
+                height: 100%;
+                padding: 8px 12px;
+                font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+                font-size: 11px;
+                line-height: 1.7;
+                overflow-y: auto;
+                color: var(--text2);
+            }
+            .log-ok {
+                color: var(--green);
+            }
+            .log-err {
+                color: var(--red);
+            }
+            .log-info {
+                color: var(--blue);
+            }
+            .log-dim {
+                color: var(--text3);
+            }
+            .log-ts {
+                color: var(--text3);
+                margin-right: 6px;
+                user-select: none;
+            }
+            .chart-wrap {
+                padding: 12px;
+                height: 100%;
+            }
+            .chart-wrap canvas {
+                max-height: 100%;
+            }
+            .legend {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 8px 12px;
+                border-top: 1px solid var(--border);
+                font-size: 10px;
+                color: var(--text3);
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .log-panel {
+                background: var(--bg2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                flex-shrink: 0;
+                height: 110px;
+                display: flex;
+                flex-direction: column;
+            }
+            .ws-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--text3);
+                margin-left: auto;
+            }
+            .ws-dot.connected {
+                background: var(--green);
+            }
+            @media (max-width: 900px) {
+                .main {
+                    grid-template-columns: 1fr;
+                    grid-template-rows: auto 1fr;
+                }
+                .sidebar {
+                    border-right: none;
+                    border-bottom: 1px solid var(--border);
+                    max-height: 420px;
+                }
+                .panel-row {
+                    grid-template-columns: 1fr;
+                }
+                .phases {
+                    grid-template-columns: 1fr;
+                }
+                .metrics {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <header class="topbar">
+                <div class="logo">
+                    <i class="ti ti-bolt"></i>
+                    <h1>FastScraper</h1>
+                    <span>async parallel crawler</span>
+                </div>
+                <div id="status-pill" class="status-pill pill-idle">
+                    <span class="dot"></span><span id="pill-text">Idle</span>
+                </div>
+                <div class="topbar-right">
+                    <span class="topbar-time" id="elapsed-display"></span>
+                    <div
+                        class="ws-dot"
+                        id="ws-dot"
+                        title="WebSocket disconnected"
+                    ></div>
+                </div>
+            </header>
+
+            <div class="main">
+                <aside class="sidebar">
+                    <section>
+                        <h3>Target</h3>
+                        <div class="input-group">
+                            <label>Start URL</label
+                            ><input
+                                type="url"
+                                id="cfg-url"
+                                placeholder="https://example.com"
+                                value="https://books.toscrape.com"
+                            />
+                        </div>
+                        <div class="input-group">
+                            <label>Output directory</label
+                            ><input
+                                type="text"
+                                id="cfg-outdir"
+                                value="./scraped_output"
+                            />
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>Performance</h3>
+                        <div class="cfg-grid">
+                            <div class="input-group">
+                                <label>Threads</label
+                                ><input
+                                    type="number"
+                                    id="cfg-threads"
+                                    value="50"
+                                    min="1"
+                                    max="300"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label>Max depth</label
+                                ><input
+                                    type="number"
+                                    id="cfg-depth"
+                                    value="3"
+                                    min="1"
+                                    max="10"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label>Max pages</label
+                                ><input
+                                    type="number"
+                                    id="cfg-pages"
+                                    value="500"
+                                    min="1"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label>Delay (s)</label
+                                ><input
+                                    type="number"
+                                    id="cfg-delay"
+                                    value="0"
+                                    min="0"
+                                    step="0.1"
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>Proxy</h3>
+                        <div class="input-group">
+                            <label
+                                ><input type="checkbox" id="cfg-use-proxy" />
+                                Use proxies</label
+                            >
+                        </div>
+                        <div class="input-group">
+                            <label>Proxy URL (single)</label
+                            ><input
+                                type="text"
+                                id="cfg-proxy"
+                                placeholder="http://user:pass@host:port"
+                            />
+                        </div>
+                        <div class="input-group">
+                            <div style="display: flex; gap: 8px">
+                                <button
+                                    class="btn"
+                                    id="btn-discover"
+                                    onclick="discoverProxies()"
+                                >
+                                    Discover
+                                </button>
+                                <button
+                                    class="btn"
+                                    id="btn-use-first"
+                                    onclick="useFirstProxy()"
+                                    title="Set proxy input to first discovered"
+                                >
+                                    Use first
+                                </button>
+                            </div>
+                            <div
+                                id="proxy-list"
+                                style="
+                                    margin-top: 8px;
+                                    font-size: 11px;
+                                    color: var(--text2);
+                                    max-height: 100px;
+                                    overflow: auto;
+                                "
+                            ></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>Options</h3>
+                        <div class="toggle-row">
+                            <label>Save HTML</label
+                            ><input
+                                type="checkbox"
+                                class="toggle"
+                                id="cfg-html"
+                                checked
+                            />
+                        </div>
+                        <div class="toggle-row">
+                            <label>Save text</label
+                            ><input
+                                type="checkbox"
+                                class="toggle"
+                                id="cfg-text"
+                                checked
+                            />
+                        </div>
+                        <hr
+                            style="
+                                border: 0;
+                                border-top: 1px solid var(--border);
+                                margin: 8px 0;
+                            "
+                        />
+                        <div class="toggle-row">
+                            <label
+                                title="Downloads images (JPG, PNG, WEBP, etc.)"
+                                >Download Images</label
+                            ><input
+                                type="checkbox"
+                                class="toggle"
+                                id="cfg-dl-img"
+                                checked
+                            />
+                        </div>
+                        <div class="toggle-row">
+                            <label title="Downloads videos (MP4, WEBM, etc.)"
+                                >Download Videos</label
+                            ><input
+                                type="checkbox"
+                                class="toggle"
+                                id="cfg-dl-vid"
+                                checked
+                            />
+                        </div>
+                        <div class="toggle-row">
+                            <label title="Downloads GIFs">Download GIFs</label
+                            ><input
+                                type="checkbox"
+                                class="toggle"
+                                id="cfg-dl-gif"
+                                checked
+                            />
+                        </div>
+                        <hr
+                            style="
+                                border: 0;
+                                border-top: 1px solid var(--border);
+                                margin: 8px 0;
+                            "
+                        />
+                        <div class="toggle-row">
+                            <label>Respect robots.txt</label
+                            ><input
+                                type="checkbox"
+                                class="toggle"
+                                id="cfg-robots"
+                                checked
+                            />
+                        </div>
+                    </section>
+
+                    <section>
+                        <div class="btn-row">
+                            <button
+                                class="btn btn-start"
+                                id="btn-start"
+                                onclick="startCrawl()"
+                            >
+                                <i class="ti ti-player-play"></i> Start
+                            </button>
+                            <button
+                                class="btn btn-stop"
+                                id="btn-stop"
+                                onclick="stopCrawl()"
+                                disabled
+                            >
+                                <i class="ti ti-square"></i> Stop
+                            </button>
+                        </div>
+                    </section>
+                </aside>
+
+                <div class="content">
+                    <!-- Metrics -->
+                    <div class="metrics">
+                        <div class="metric green">
+                            <div class="metric-label">Pages fetched</div>
+                            <div class="metric-value" id="m-pages">0</div>
+                            <div class="metric-sub">
+                                of <span id="m-total">0</span> discovered
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Throughput</div>
+                            <div class="metric-value" id="m-rps">0.0</div>
+                            <div class="metric-sub">pages / sec</div>
+                        </div>
+                        <div class="metric blue">
+                            <div class="metric-label">Media Files</div>
+                            <div class="metric-value" id="m-imgs">0</div>
+                            <div class="metric-sub">downloaded</div>
+                        </div>
+                        <div class="metric red">
+                            <div class="metric-label">Errors</div>
+                            <div class="metric-value" id="m-errs">0</div>
+                            <div class="metric-sub">failed</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Data saved</div>
+                            <div class="metric-value" id="m-bytes">0.0</div>
+                            <div class="metric-sub">MB</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">ETA</div>
+                            <div class="metric-value" id="m-eta">—</div>
+                            <div class="metric-sub" id="m-elapsed-sub"></div>
+                        </div>
+                    </div>
+
+                    <!-- Phases -->
+                    <div class="phases">
+                        <div class="phase" id="phase-1">
+                            <div class="phase-head">
+                                <div class="phase-num">1</div>
+                                <div class="phase-title">BFS Discovery</div>
+                            </div>
+                            <div class="phase-detail" id="p1-detail">
+                                Waiting to start
+                            </div>
+                            <div class="prog-track">
+                                <div
+                                    class="prog-fill"
+                                    id="p1-fill"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="phase" id="phase-2">
+                            <div class="phase-head">
+                                <div class="phase-num">2</div>
+                                <div class="phase-title">Parallel Fetch</div>
+                            </div>
+                            <div class="phase-detail" id="p2-detail">
+                                Waiting
+                            </div>
+                            <div class="prog-track">
+                                <div
+                                    class="prog-fill"
+                                    id="p2-fill"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="phase" id="phase-3">
+                            <div class="phase-head">
+                                <div class="phase-num">3</div>
+                                <div class="phase-title">Media Download</div>
+                            </div>
+                            <div class="phase-detail" id="p3-detail">
+                                Waiting
+                            </div>
+                            <div class="prog-track">
+                                <div
+                                    class="prog-fill"
+                                    id="p3-fill"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panels -->
+                    <div class="panel-row">
+                        <div class="panel">
+                            <div class="panel-head">
+                                <div class="panel-head-left">
+                                    <i class="ti ti-list"></i> URL Feed
+                                </div>
+                                <div class="panel-head-right" id="feed-count">
+                                    0 URLs
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="panel-scroll" id="url-feed"></div>
+                            </div>
+                        </div>
+                        <div
+                            class="panel"
+                            style="display: flex; flex-direction: column"
+                        >
+                            <div class="panel-head">
+                                <div class="panel-head-left">
+                                    <i class="ti ti-chart-line"></i> Throughput
+                                </div>
+                                <div class="panel-head-right" id="rps-label">
+                                    pages/s
+                                </div>
+                            </div>
+                            <div style="flex: 1; padding: 12px; min-height: 0">
+                                <div style="position: relative; height: 100%">
+                                    <canvas id="tChart" role="img"></canvas>
+                                </div>
+                            </div>
+                            <div
+                                class="panel-head"
+                                style="
+                                    border-top: 1px solid var(--border);
+                                    border-bottom: none;
+                                "
+                            >
+                                <div class="panel-head-left">
+                                    <i class="ti ti-chart-donut"></i> Status
+                                    codes
+                                </div>
+                                <div class="panel-head-right" id="status-total">
+                                    0 responses
+                                </div>
+                            </div>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    padding: 8px 12px;
+                                    gap: 16px;
+                                    min-height: 0;
+                                "
+                            >
+                                <div
+                                    style="
+                                        position: relative;
+                                        width: 80px;
+                                        height: 80px;
+                                        flex-shrink: 0;
+                                    "
+                                >
+                                    <canvas id="sChart" role="img"></canvas>
+                                </div>
+                                <div
+                                    id="status-legend"
+                                    style="
+                                        display: flex;
+                                        flex-direction: column;
+                                        gap: 4px;
+                                        font-size: 10px;
+                                        color: var(--text2);
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="log-panel">
+                        <div class="panel-head">
+                            <div class="panel-head-left">
+                                <i class="ti ti-terminal-2"></i> Console
+                            </div>
+                            <button
+                                onclick="clearLog()"
+                                style="
+                                    background: none;
+                                    border: none;
+                                    color: var(--text3);
+                                    cursor: pointer;
+                                    font-size: 11px;
+                                "
+                            >
+                                Clear
+                            </button>
+                        </div>
+                        <div class="log-body" id="log-body"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const S = {
+                running: false,
+                phase: 0,
+                urlsFound: 0,
+                urlsDone: 0,
+                errors: 0,
+                media: 0,
+                bytes: 0,
+                startTime: 0,
+                elapsed: 0,
+                statusCounts: { 200: 0, "3xx": 0, 404: 0, "5xx": 0 },
+                feedItems: [],
+                logLines: [],
+                tLabels: [],
+                tValues: [],
+                rps: 0,
+            };
+            let tickTimer = null,
+                ws = null;
+
+            function connectWS() {
+                const proto = location.protocol === "https:" ? "wss" : "ws";
+                ws = new WebSocket(`${proto}://${location.host}/ws`);
+                ws.onopen = () => {
+                    document
+                        .getElementById("ws-dot")
+                        .classList.add("connected");
+                    log("Connected to server", "info");
+                };
+                ws.onclose = () => {
+                    document
+                        .getElementById("ws-dot")
+                        .classList.remove("connected");
+                    setTimeout(connectWS, 3000);
+                };
+                ws.onerror = () => ws.close();
+                ws.onmessage = (e) => handleEvent(JSON.parse(e.data));
+            }
+
+            function handleEvent(ev) {
+                switch (ev.type) {
+                    case "phase":
+                        setPhase(ev.phase);
+                        log(`Phase ${ev.phase}: ${ev.text}`, "info");
+                        break;
+                    case "bfs_progress":
+                        S.urlsFound = ev.found;
+                        setPhaseBar(1, ev.pct);
+                        setPhaseDetail(
+                            1,
+                            `${ev.found} URLs found  |  queue: ${ev.queue}`,
+                        );
+                        updateMetrics();
+                        break;
+                    case "phase1_done":
+                        S.urlsFound = ev.total;
+                        setPhaseBar(1, 100);
+                        setPhaseDetail(1, `Complete — ${ev.total} URLs mapped`);
+                        completePhase(1);
+                        updateMetrics();
+                        break;
+                    case "page_done":
+                        S.urlsDone = ev.done;
+                        if (!ev.success) S.errors++;
+                        const cat =
+                            ev.status >= 500
+                                ? "5xx"
+                                : ev.status >= 400
+                                  ? "404"
+                                  : ev.status >= 300
+                                    ? "3xx"
+                                    : 200;
+                        S.statusCounts[cat] = (S.statusCounts[cat] || 0) + 1;
+                        addFeedItem(ev.url, ev.status, ev.ms, "page");
+                        setPhaseBar(2, ev.pct);
+                        setPhaseDetail(
+                            2,
+                            `${ev.done}/${ev.total} pages  •  ${S.errors} errors`,
+                        );
+                        updateMetrics();
+                        updateStatusChart();
+                        break;
+
+                    // UPDATED to media_done matching python script
+                    case "media_done":
+                        S.media = ev.done;
+                        setPhaseBar(3, ev.pct);
+                        setPhaseDetail(3, `${ev.done}/${ev.total} media files`);
+                        document.getElementById("m-imgs").textContent = S.media;
+                        break;
+
+                    case "log":
+                        log(ev.msg, ev.level || "dim");
+                        break;
+                    case "done":
+                        finishCrawl(ev);
+                        break;
+                }
+            }
+
+            let tChart, sChart;
+            function initCharts() {
+                if (tChart) tChart.destroy();
+                if (sChart) sChart.destroy();
+                S.tLabels = [];
+                S.tValues = [];
+                tChart = new Chart(document.getElementById("tChart"), {
+                    type: "line",
+                    data: {
+                        labels: S.tLabels,
+                        datasets: [
+                            {
+                                data: S.tValues,
+                                borderColor: "#1fcc8a",
+                                backgroundColor: "rgba(31,204,138,.06)",
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                tension: 0.4,
+                                fill: true,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    font: { size: 9 },
+                                    color: "#545d72",
+                                    maxTicksLimit: 8,
+                                },
+                                grid: { color: "rgba(255,255,255,.04)" },
+                                border: { color: "rgba(255,255,255,.06)" },
+                            },
+                            y: {
+                                min: 0,
+                                ticks: { font: { size: 9 }, color: "#545d72" },
+                                grid: { color: "rgba(255,255,255,.04)" },
+                                border: { color: "rgba(255,255,255,.06)" },
+                            },
+                        },
+                    },
+                });
+                sChart = new Chart(document.getElementById("sChart"), {
+                    type: "doughnut",
+                    data: {
+                        labels: ["200 OK", "3xx Redir", "404", "5xx Error"],
+                        datasets: [
+                            {
+                                data: [0, 0, 0, 0],
+                                backgroundColor: [
+                                    "#1fcc8a",
+                                    "#f5a623",
+                                    "#ff5c5c",
+                                    "#a78bfa",
+                                ],
+                                borderWidth: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        cutout: "60%",
+                        plugins: { legend: { display: false } },
+                    },
+                });
+            }
+
+            function updateStatusChart() {
+                const c = S.statusCounts;
+                sChart.data.datasets[0].data = [
+                    c[200] || 0,
+                    c["3xx"] || 0,
+                    c[404] || 0,
+                    c["5xx"] || 0,
+                ];
+                sChart.update("none");
+                document.getElementById("status-total").textContent =
+                    Object.values(c).reduce((a, b) => a + b, 0) + " responses";
+                const colors = ["#1fcc8a", "#f5a623", "#ff5c5c", "#a78bfa"],
+                    labels = ["200 OK", "3xx", "404", "5xx"],
+                    vals = [
+                        c[200] || 0,
+                        c["3xx"] || 0,
+                        c[404] || 0,
+                        c["5xx"] || 0,
+                    ];
+                document.getElementById("status-legend").innerHTML = labels
+                    .map(
+                        (l, i) =>
+                            `<div class="legend-item"><span style="width:8px;height:8px;border-radius:2px;background:${colors[i]};display:inline-block;"></span>${l}: <strong>${vals[i]}</strong></div>`,
+                    )
+                    .join("");
+            }
+
+            function addFeedItem(url, code, ms, type) {
+                S.feedItems.unshift({ url, code, ms, type });
+                if (S.feedItems.length > 500) S.feedItems.pop();
+                renderFeed();
+                document.getElementById("feed-count").textContent =
+                    S.feedItems.length + " URLs";
+            }
+            function renderFeed() {
+                document.getElementById("url-feed").innerHTML = S.feedItems
+                    .slice(0, 120)
+                    .map((f) => {
+                        const isErr = f.code >= 400,
+                            isRedir = f.code >= 300 && f.code < 400;
+                        return `<div class="feed-item"><span class="feed-dot ${isErr ? "fd-err" : isRedir ? "fd-redir" : "fd-ok"}"></span><span class="feed-url" title="${f.url}">${f.url.replace(/https?:\/\//, "").slice(0, 58)}</span><span class="feed-ms">${f.ms > 0 ? f.ms + "ms" : ""}</span><span class="feed-code ${isErr ? "fc-err" : isRedir ? "fc-redir" : "fc-ok"}">${f.code}</span></div>`;
+                    })
+                    .join("");
+            }
+
+            function log(msg, level = "dim") {
+                const ts = S.running
+                    ? "+" + S.elapsed.toFixed(1) + "s"
+                    : "      ";
+                S.logLines.push({ ts, msg, level });
+                if (S.logLines.length > 300) S.logLines.shift();
+                renderLog();
+            }
+            function renderLog() {
+                const el = document.getElementById("log-body");
+                el.innerHTML = S.logLines
+                    .map(
+                        (l) =>
+                            `<div><span class="log-ts">[${l.ts}]</span><span class="log-${l.level}">${l.msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span></div>`,
+                    )
+                    .join("");
+                el.scrollTop = el.scrollHeight;
+            }
+            function clearLog() {
+                S.logLines = [];
+                renderLog();
+            }
+
+            function setPhase(n) {
+                S.phase = n;
+                for (let i = 1; i <= 3; i++) {
+                    const el = document.getElementById("phase-" + i);
+                    el.classList.remove("active", "done");
+                    if (i === n) el.classList.add("active");
+                    else if (i < n) el.classList.add("done");
+                }
+                if (n === 2 || n === 3)
+                    document
+                        .getElementById("p" + n + "-fill")
+                        .classList.add("indeterminate");
+            }
+            function completePhase(n) {
+                document
+                    .getElementById("phase-" + n)
+                    .classList.remove("active");
+                document.getElementById("phase-" + n).classList.add("done");
+            }
+            function setPhaseBar(n, pct) {
+                const f = document.getElementById("p" + n + "-fill");
+                f.classList.remove("indeterminate");
+                f.style.width = pct + "%";
+            }
+            function setPhaseDetail(n, text) {
+                document.getElementById("p" + n + "-detail").textContent = text;
+            }
+
+            function updateMetrics() {
+                document.getElementById("m-pages").textContent = S.urlsDone;
+                document.getElementById("m-total").textContent = S.urlsFound;
+                document.getElementById("m-errs").textContent = S.errors;
+                document.getElementById("m-bytes").textContent = (
+                    S.bytes /
+                    1024 /
+                    1024
+                ).toFixed(1);
+                S.rps = S.elapsed > 0 ? S.urlsDone / S.elapsed : 0;
+                document.getElementById("m-rps").textContent = S.rps.toFixed(1);
+                document.getElementById("m-elapsed-sub").textContent =
+                    S.elapsed.toFixed(0) + "s elapsed";
+                const remaining = S.urlsFound - S.urlsDone;
+                if (S.rps > 0.01 && remaining > 0 && S.phase === 2)
+                    document.getElementById("m-eta").textContent =
+                        Math.ceil(remaining / S.rps) + "s";
+                else if (!S.running)
+                    document.getElementById("m-eta").textContent = "—";
+            }
+
+            async function startCrawl() {
+                const url = document.getElementById("cfg-url").value.trim();
+                if (!url) {
+                    alert("Please enter a URL");
+                    return;
+                }
+                resetState();
+                initCharts();
+                S.running = true;
+                S.startTime = performance.now();
+                setPill("running", "Running");
+                document.getElementById("btn-start").disabled = true;
+                document.getElementById("btn-stop").disabled = false;
+                tickTimer = setInterval(() => {
+                    S.elapsed = (performance.now() - S.startTime) / 1000;
+                    document.getElementById("elapsed-display").textContent =
+                        S.elapsed.toFixed(1) + "s";
+                    if (
+                        Math.floor(S.elapsed) % 2 === 0 &&
+                        Math.floor(S.elapsed) !== window._lastTick
+                    ) {
+                        window._lastTick = Math.floor(S.elapsed);
+                        S.tLabels.push(S.elapsed.toFixed(0) + "s");
+                        S.tValues.push(parseFloat(S.rps.toFixed(2)));
+                        if (S.tLabels.length > 45) {
+                            S.tLabels.shift();
+                            S.tValues.shift();
+                        }
+                        tChart.update("none");
+                    }
+                    updateMetrics();
+                }, 200);
+
+                try {
+                    const res = await fetch("/start", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            url: url,
+                            threads:
+                                parseInt(
+                                    document.getElementById("cfg-threads")
+                                        .value,
+                                ) || 50,
+                            depth:
+                                parseInt(
+                                    document.getElementById("cfg-depth").value,
+                                ) || 3,
+                            max_pages:
+                                parseInt(
+                                    document.getElementById("cfg-pages").value,
+                                ) || 500,
+                            delay:
+                                parseFloat(
+                                    document.getElementById("cfg-delay").value,
+                                ) || 0,
+                            proxy: document.getElementById("cfg-use-proxy")
+                                .checked
+                                ? document
+                                      .getElementById("cfg-proxy")
+                                      .value.trim()
+                                : "",
+
+                            dl_images:
+                                document.getElementById("cfg-dl-img").checked,
+                            dl_videos:
+                                document.getElementById("cfg-dl-vid").checked,
+                            dl_gifs:
+                                document.getElementById("cfg-dl-gif").checked,
+
+                            save_html:
+                                document.getElementById("cfg-html").checked,
+                            save_text:
+                                document.getElementById("cfg-text").checked,
+                            ignore_robots:
+                                !document.getElementById("cfg-robots").checked,
+                            output_dir:
+                                document.getElementById("cfg-outdir").value ||
+                                "./scraped_output",
+                        }),
+                    });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        log("Error: " + err.error, "err");
+                        document.getElementById("btn-start").disabled = false;
+                        document.getElementById("btn-stop").disabled = true;
+                    }
+                } catch (e) {
+                    log("Failed to connect: " + e.message, "err");
+                    document.getElementById("btn-start").disabled = false;
+                    document.getElementById("btn-stop").disabled = true;
+                }
+            }
+
+            async function stopCrawl() {
+                await fetch("/stop", { method: "POST" });
+                log("Stop signal sent", "err");
+            }
+
+            function finishCrawl(ev) {
+                clearInterval(tickTimer);
+                S.running = false;
+                S.bytes = ev.bytes || 0;
+                S.media = ev.media || 0;
+                updateMetrics();
+                document.getElementById("m-imgs").textContent = S.media;
+                document.getElementById("m-bytes").textContent = (
+                    S.bytes /
+                    1024 /
+                    1024
+                ).toFixed(1);
+                if (ev.stopped) {
+                    setPill("stopped", "Stopped");
+                    log("Crawl stopped.", "err");
+                } else {
+                    setPill("done", "Complete");
+                    log(
+                        `Done — ${ev.pages} pages, ${ev.media} media files, ${(ev.bytes / 1024 / 1024).toFixed(1)} MB in ${ev.elapsed}s`,
+                        "ok",
+                    );
+                    for (let i = 1; i <= 3; i++) {
+                        completePhase(i);
+                        setPhaseBar(i, 100);
+                    }
+                }
+                document.getElementById("btn-start").disabled = false;
+                document.getElementById("btn-stop").disabled = true;
+            }
+
+            function resetState() {
+                clearInterval(tickTimer);
+                Object.assign(S, {
+                    running: false,
+                    phase: 0,
+                    urlsFound: 0,
+                    urlsDone: 0,
+                    errors: 0,
+                    media: 0,
+                    bytes: 0,
+                    startTime: 0,
+                    elapsed: 0,
+                    statusCounts: { 200: 0, "3xx": 0, 404: 0, "5xx": 0 },
+                    feedItems: [],
+                    logLines: [],
+                    tLabels: [],
+                    tValues: [],
+                    rps: 0,
+                });
+                for (let i = 1; i <= 3; i++) {
+                    document
+                        .getElementById("phase-" + i)
+                        .classList.remove("active", "done");
+                    setPhaseBar(i, 0);
+                    setPhaseDetail(i, "Waiting");
+                }
+                document.getElementById("url-feed").innerHTML = "";
+                document.getElementById("feed-count").textContent = "0 URLs";
+                document.getElementById("status-legend").innerHTML = "";
+                document.getElementById("elapsed-display").textContent = "";
+                document.getElementById("m-eta").textContent = "—";
+                updateMetrics();
+                setPill("idle", "Idle");
+            }
+            function setPill(state, text) {
+                document.getElementById("status-pill").className =
+                    "status-pill pill-" + state;
+                document.getElementById("pill-text").textContent = text;
+            }
+
+            async function discoverProxies() {
+                const btn = document.getElementById("btn-discover");
+                btn.disabled = true;
+                btn.textContent = "Discovering…";
+                try {
+                    const res = await fetch("/discover", { method: "POST" });
+                    if (!res.ok) return;
+                    const start = Date.now();
+                    let proxies = [];
+                    while (Date.now() - start < 20000) {
+                        await new Promise((r) => setTimeout(r, 1000));
+                        const st = await fetch("/discover/status");
+                        if (!st.ok) break;
+                        const j = await st.json();
+                        proxies = j.proxies || [];
+                        if (!j.running) break;
+                    }
+                    document.getElementById("proxy-list").innerHTML =
+                        proxies.length === 0
+                            ? "<div>No proxies found</div>"
+                            : proxies
+                                  .map(
+                                      (p) =>
+                                          `<div style="padding:4px 0;">${p}</div>`,
+                                  )
+                                  .join("");
+                    window._discoveredProxies = proxies || [];
+                    if (proxies.length > 0) {
+                        document.getElementById("cfg-proxy").value = proxies[0];
+                        document.getElementById("cfg-use-proxy").checked = true;
+                        log(`Auto-selected first proxy: ${proxies[0]}`, "ok");
+                    }
+                } catch (e) {
+                    log("Discover failed: " + e.message, "err");
+                }
+                btn.disabled = false;
+                btn.textContent = "Discover";
+            }
+            function useFirstProxy() {
+                if (
+                    window._discoveredProxies &&
+                    window._discoveredProxies.length > 0
+                ) {
+                    document.getElementById("cfg-proxy").value =
+                        window._discoveredProxies[0];
+                    document.getElementById("cfg-use-proxy").checked = true;
+                }
+            }
+
+            initCharts();
+            updateMetrics();
+            connectWS();
+        </script>
+    </body>
+</html>
