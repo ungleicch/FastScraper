@@ -10,9 +10,12 @@ I made this because I got tired of slow scrapers that eat all your RAM and take 
 
 https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4
 
-> Watch how FastScraper crawls, parses, and downloads media in real-time with the Web GUI.
+<video width="100%" controls>
+  <source src="https://github.com/ungleicch/FastScraper/raw/main/demo/fastscraper_demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
----
+> Watch FastScraper crawling, parsing, and downloading media in real-time with the Web GUI.
 
 ## ✨ Features
 - 3-phase pipeline: BFS mapping → Parallel HTML fetching → Smart media downloading
